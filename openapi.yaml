@@ -1,0 +1,276 @@
+openapi: 3.0.0
+info:
+  title: Inventory API
+  description: API для керування інвентарем
+  version: 1.0.0
+
+tags:
+  - name: devices
+    description: Дії над пристроями
+  - name: users
+    description: Дії над користувачами, взяття/повернення/відображення пристроїв у користуванні
+  
+
+paths:
+  /devices:
+    get:
+      summary: Отримати список пристроїв
+      responses:
+        '200':
+          description: Успішний запит. Повертає список пристроїв.
+        '500':
+          description: Помилка сервера.
+      tags:
+        - devices
+    
+    post:
+      summary: Додати новий пристрій
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                deviceId:
+                  type: string
+                deviceName:
+                  type: string
+                description:
+                  type: string
+                serialNumber:
+                  type: string
+                manufacturer:
+                  type: string
+                photo:
+                  type: string
+                  format: binary
+              required:
+                - deviceId
+                - deviceName
+                - description
+                - serialNumber
+                - manufacturer
+      responses:
+        '200':
+          description: Успішний запит, пристрій додано.
+        '500':
+          description: Помилка сервера.
+      tags:
+        - devices
+
+
+
+  /devices/{id}:
+    get:
+      summary: Отримати пристрій за ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Ідентифікатор пристрою
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Успішний запит. Повертає інформацію про пристрій.
+        '404':
+          description: Даний пристрій не знайдено.
+      tags:
+        - devices
+
+    put:
+      summary: Оновити пристрій за ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Ідентифікатор пристрою
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+           multipart/form-data:
+            schema:
+              type: object
+              properties:
+                deviceName:
+                  type: string
+                description:
+                  type: string
+                serialNumber:
+                  type: string
+                manufacturer:
+                  type: string
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Успішний запит, дані про пристрій оновлено.
+        '404':
+          description: Даний пристрій не знайдено.
+        '500':
+          description: Помилка сервера.
+      tags:
+        - devices
+
+    delete:
+      summary: Видалити пристрій за ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Ідентифікатор пристрою
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Успішний запит. Пристрій видалено.
+        '404':
+          description: Даний пристрій не знайдено.
+        '500':
+          description: Помилка сервера.
+      tags:
+        - devices
+
+  /devices/{deviceId}/photo:
+    get:
+      summary: Отримати фото пристрою за ID
+      parameters:
+        - in: path
+          name: deviceId
+          required: true
+          schema:
+            type: integer
+          description: Ідентифікатор пристрою
+      responses:
+        '200':
+          description: Фото пристрою
+          content:
+            image/jpeg: {}
+        '404':
+          description: Фото не знайдено.
+        '500':
+          description: Помилка сервера.
+      tags:
+        - devices
+
+  /register:
+    post:
+      summary: Реєстрація нового користувача
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+      responses:
+        '201':
+          description: Успішна реєстрація користувача.
+        '400':
+          description: Користувач з таким ім'ям вже існує.
+        '500':
+          description: Помилка сервера.
+      tags:
+        - users
+
+  /users:
+    get:
+      summary: Список всіх користувачів
+      responses:
+        '200':
+          description: Успішний запит. Повертає список користувачів.
+        '500':
+          description: Помилка сервера.
+      tags:
+        - users
+
+  /devices/{id}/take:
+    put:
+      summary: Взяти пристрій у користування
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Ідентифікатор пристрою.
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+      responses:
+        '200':
+          description: Успішно взято пристрій у користування.
+        '404':
+          description: Проблема з знайденням пристрою або користувача.
+        '403':
+          description: Проблема з вже зайнятим пристроєм або відсутністю користувача.
+      tags:
+        - users
+
+  /devices/{id}/return:
+    put:
+      summary: Повернути пристрій на зберігання
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Ідентифікатор пристрою
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+      responses:
+        '200':
+          description: Успішно повернуто пристрій на зберігання.
+        '404':
+          description: Проблема з знайденням пристрою або користувача.
+        '403':
+          description: Проблема з відсутністю пристрою або неправильним користувачем.
+      tags:
+        - users
+
+
+  /users/{username}/devices:
+    get:
+      summary: Отримати список пристроїв у користуванні користувача
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Ім'я користувача
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успішний запит. Повертає список пристроїв у користуванні користувача.
+        '500':
+          description: Помилка сервера.
+      tags:
+        - users
